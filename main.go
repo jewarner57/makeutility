@@ -28,7 +28,6 @@ type Repo struct {
 }
 
 // TODO
-// Make sortable
 // Allow user to create username config json file
 // Add pretty formatting
 // Add docs and general info to readme
@@ -45,12 +44,12 @@ func main() {
 	flag.Parse()
 
 	if *sortBy != "" {
-		sortString := "sort:" + *sortBy
+		sortString := "&sort:" + *sortBy
 		sortBy = &sortString
 	}
 
 	if *language != "" {
-		languageString := "language:" + *language
+		languageString := "&language:" + *language
 		language = &languageString
 	}
 
@@ -79,9 +78,8 @@ func printRepoList(repoList RepoList) {
 }
 
 func fetchRepoData(username string, q string, sortBy string, language string) []byte {
-	// +language:assembly&sort=stars&order=desc
 	response, err := http.Get(
-		"https://api.github.com/search/repositories?q=" + q + "%20user:" + username + "%20" + sortBy + "%20" + language,
+		"https://api.github.com/search/repositories?q=" + q + "%20user:" + username + sortBy + language,
 	)
 
 	if err != nil {
