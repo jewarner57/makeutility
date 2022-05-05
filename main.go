@@ -21,6 +21,14 @@ type Repo struct {
 	CloneUrl    string    `json:"clone_url"`
 }
 
+// TODO
+// Add Flags
+// Make searchable
+// Make sortable
+// Allow user to create username config json file
+// Add pretty formatting
+// Add docs and general info to readme
+
 func main() {
 	var username string = "jewarner57"
 	responseData := fetchRepoData(username)
