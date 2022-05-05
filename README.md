@@ -1,2 +1,2 @@
-# BEW - Staticly Typed Languages Final Project
+# BEW - Statically Typed Languages Final Project
 
