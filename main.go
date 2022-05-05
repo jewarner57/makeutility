@@ -2,15 +2,21 @@ package main
 
 import (
 	"encoding/json"
-	"errors"
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
-	"sort"
 	"time"
+
+	"github.com/fatih/color"
 )
+
+type RepoList struct {
+	TotalCount int    `json:"total_count"`
+	Items      []Repo `json:"items"`
+}
 
 type Repo struct {
 	Name        string    `json:"name"`
@@ -22,51 +28,61 @@ type Repo struct {
 }
 
 // TODO
-// Add Flags
-// Make searchable
 // Make sortable
 // Allow user to create username config json file
 // Add pretty formatting
 // Add docs and general info to readme
 
 func main() {
-	var username string = "jewarner57"
-	responseData := fetchRepoData(username)
+	query := flag.String("query", "", "A query string to filter results.")
+	sortBy := flag.String(
+		"sort",
+		"",
+		`A string indicating how to sort the results. 
+		One of: interactions, reactions, author-date, comitter-date, updated`,
+	)
+	language := flag.String("lang", "", "Filter results by language")
+	flag.Parse()
 
-	repoList := make([]Repo, 0)
+	if *sortBy != "" {
+		sortString := "sort:" + *sortBy
+		sortBy = &sortString
+	}
+
+	if *language != "" {
+		languageString := "language:" + *language
+		language = &languageString
+	}
+
+	var username string = "jewarner57"
+	responseData := fetchRepoData(username, *query, *sortBy, *language)
+
+	var repoList RepoList
 	if err := json.Unmarshal([]byte(responseData), &repoList); err != nil {
 		log.Fatal(err)
 	}
 
-	sort.Slice(repoList, func(i, j int) bool {
-		return repoList[i].UpdatedAt.After(repoList[j].UpdatedAt)
-	})
-
-	fmt.Println(string(repoList[0].CloneUrl))
+	printRepoList(repoList)
 }
 
-func fetchRepoData(username string) []byte {
-	info, err := os.Stat("./cache.json")
-	hoursSinceCacheUpdated := time.Since(info.ModTime()).Hours()
-	if errors.Is(err, os.ErrNotExist) || hoursSinceCacheUpdated > 0.5 {
-		updateCacheData(username)
-	}
+func printRepoList(repoList RepoList) {
+	for _, repo := range repoList.Items {
 
-	jsonFile, err := os.Open("cache.json")
-	if err != nil {
-		log.Fatal(err)
-	}
+		green := color.New(color.FgGreen)
+		boldGreen := green.Add(color.Bold)
 
-	cacheData, err := ioutil.ReadAll(jsonFile)
-	if err != nil {
-		log.Fatal(err)
+		boldGreen.Println(repo.Name)
+		fmt.Println(repo.Description)
+		fmt.Println(repo.CloneUrl)
+		fmt.Println("------------------")
 	}
-
-	return cacheData
 }
 
-func updateCacheData(username string) {
-	response, err := http.Get("https://api.github.com/users/" + username + "/repos")
+func fetchRepoData(username string, q string, sortBy string, language string) []byte {
+	// +language:assembly&sort=stars&order=desc
+	response, err := http.Get(
+		"https://api.github.com/search/repositories?q=" + q + "%20user:" + username + "%20" + sortBy + "%20" + language,
+	)
 
 	if err != nil {
 		fmt.Print(err.Error())
@@ -78,5 +94,5 @@ func updateCacheData(username string) {
 		log.Fatal(err)
 	}
 
-	ioutil.WriteFile("cache.json", []byte(responseData), 0644)
+	return responseData
 }
