@@ -30,6 +30,10 @@ type Repo struct {
 	CloneUrl    string    `json:"clone_url"`
 }
 
+type User struct {
+	Username string `json:"username"`
+}
+
 // TODO
 // Allow user to create username config json file
 // Add pretty formatting
@@ -44,6 +48,7 @@ func main() {
 		One of: interactions, reactions, author-date, comitter-date, updated`,
 	)
 	language := flag.String("lang", "", "Filter results by language")
+	setUsername := flag.String("setUser", "", "Save a new default username.")
 	flag.Parse()
 
 	if *sortBy != "" {
@@ -56,7 +61,11 @@ func main() {
 		language = &languageString
 	}
 
-	var username string = "jewarner57"
+	if *setUsername != "" {
+		updateUserConfig(*setUsername)
+	}
+
+	var username string = loadConfig()
 	responseData := fetchRepoData(username, *query, *sortBy, *language)
 
 	var repoList RepoList
@@ -107,4 +116,31 @@ func fetchRepoData(username string, q string, sortBy string, language string) []
 	}
 
 	return responseData
+}
+
+func loadConfig() string {
+	config, err := os.Open("./config.json")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	configData, err := ioutil.ReadAll(config)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var user User
+	if json.Unmarshal([]byte(configData), &user); err != nil {
+		log.Fatal(err)
+	}
+
+	return user.Username
+}
+
+func updateUserConfig(username string) {
+	newUser := User{Username: username}
+
+	file, _ := json.MarshalIndent(newUser, "", " ")
+
+	_ = ioutil.WriteFile("config.json", file, 0644)
 }
