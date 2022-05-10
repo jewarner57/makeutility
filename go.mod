@@ -1,4 +1,4 @@
-module makeutility
+module github.com/jewarner57/makeutility
 
 go 1.18
 
