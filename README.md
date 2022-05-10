@@ -13,16 +13,17 @@
 ## Usage
 
 ### Flags
-  * lang string
-    * Filter results by language
-  * query string
+  * **query** (string)
     * A query string to filter results.
-  * setUser string
-    * Save a new default username.
-  * sort string
+  * **lang** (string)
+    * Filter results by language
+  * **sort** (string)
     * A string indicating how to sort the results.
     	* One of: interactions, reactions, author-date, comitter-date, updated
-
+  * **setUser** (string)
+    * Save a new default username.
+    * Default username is saved in config.json.
+  
 ## Examples
 ![example usage](./assets/ex1.png)
 ![example usage](./assets/ex2.png)
