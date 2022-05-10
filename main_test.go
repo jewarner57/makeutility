@@ -1,4 +1,4 @@
-package makeutility
+package main
 
 import (
 	"testing"
@@ -10,15 +10,11 @@ type Args struct {
 	Language string
 }
 
-/*
-	Name        string    `json:"name"`
-	GithubUrl   string    `json:"html_url"`
-	Description string    `json:"description"`
-	CreatedAt   time.Time `json:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at"`
-	PushedAt    time.Time `json:"pushed_at"`
-	CloneUrl    string    `json:"clone_url"`
-*/
+func BenchmarkFetchRepoData(b *testing.B) {
+	for n := 0; n < b.N; n++ {
+		fetchRepoData("jewarner57", "", "", "")
+	}
+}
 
 func TestTableFetchRepoData(t *testing.T) {
 	var tests = []struct {
