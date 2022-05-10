@@ -35,8 +35,7 @@ type User struct {
 }
 
 // TODO
-// Allow user to create username config json file
-// Add pretty formatting
+// Add table tests and benchmark tests
 // Add docs and general info to readme
 
 func main() {
@@ -66,20 +65,15 @@ func main() {
 	}
 
 	var username string = loadConfig()
-	responseData := fetchRepoData(username, *query, *sortBy, *language)
-
-	var repoList RepoList
-	if err := json.Unmarshal([]byte(responseData), &repoList); err != nil {
-		log.Fatal(err)
-	}
+	repoList := fetchRepoData(username, *query, *sortBy, *language)
 
 	printRepoList(repoList)
 }
 
-func printRepoList(repoList RepoList) {
+func printRepoList(repos []Repo) {
 	width, _, _ := terminal.GetSize(0)
 	fmt.Println(strings.Repeat("-", width))
-	for _, repo := range repoList.Items {
+	for _, repo := range repos {
 
 		boldGreen := color.New(color.FgGreen).Add(color.Bold)
 		underLineCyan := color.New(color.FgBlue).Add(color.Underline)
@@ -98,12 +92,12 @@ func printRepoList(repoList RepoList) {
 	}
 }
 
-func fetchRepoData(username string, q string, sortBy string, language string) []byte {
+func fetchRepoData(username string, q string, sortBy string, language string) []Repo {
 	response, err := http.Get(
 		"https://api.github.com/search/repositories?q=" + q + "%20user:" + username + sortBy + language,
 	)
 
-	fmt.Println("https://api.github.com/search/repositories?q=" + q + "%20user:" + username + sortBy + language)
+	// fmt.Println("https://api.github.com/search/repositories?q=" + q + "%20user:" + username + sortBy + language)
 
 	if err != nil {
 		fmt.Print(err.Error())
@@ -115,7 +109,12 @@ func fetchRepoData(username string, q string, sortBy string, language string) []
 		log.Fatal(err)
 	}
 
-	return responseData
+	var repoList RepoList
+	if err := json.Unmarshal([]byte(responseData), &repoList); err != nil {
+		log.Fatal(err)
+	}
+
+	return repoList.Items
 }
 
 func loadConfig() string {
