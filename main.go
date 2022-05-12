@@ -34,10 +34,6 @@ type User struct {
 	Username string `json:"username"`
 }
 
-// TODO
-// Add table tests and benchmark tests
-// Add docs and general info to readme
-
 func main() {
 	query := flag.String("query", "", "A query string to filter results.")
 	sortBy := flag.String(
